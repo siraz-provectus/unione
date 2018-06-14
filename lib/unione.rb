@@ -1,5 +1,14 @@
+require 'unione/sender'
 require "unione/version"
 
 module Unione
-  # Your code goes here...
+  module Installer
+    extend self
+
+    def install
+      ActionMailer::Base.add_delivery_method :unione, Unione::Sender
+    end
+  end
 end
+
+Unione::Installer.install
