@@ -6,13 +6,15 @@ module Unione
 
     def initialize(args)
       @settings = { api_key: nil, username: nil }
+
+      @logger = Rails.logger
+      @logger.info "UNIONE:INIT"
+
       args.each do |arg_name, arg_value|
         @settings[arg_name.to_sym] = arg_value
       end
-      @logger = @settings[:logger] || Rails.logger
-      @client = Unione::Client.new(@settings[:api_key], @setting[:username])
 
-      @logger.info "UNIONE:INIT"
+      @client = Unione::Client.new(@settings[:api_key], @settings[:username])
     end
 
     def deliver!(mail)
@@ -21,6 +23,7 @@ module Unione
 
       @logger.info "--- UNIONE: deliver! method ---"
       @logger.info "--- UNIONE: mail_to = #{mail_to.inspect} ---"
+
       return if mail_to.blank?
 
       mail_to.each do |email_address|
@@ -30,10 +33,10 @@ module Unione
       send_params = {
         message: {
           subject: mail.subject,
-          body: mail.body,
-          from_email: mail.from,
+          from_email: mail.from.first,
           from_name: @settings[:sender_name] || mail.from.split('@').first,
-          recipients: recipients
+          recipients: recipients,
+          body: { html: mail.body.raw_source }
         }
       }
       @logger.info "--- UNIONE: send emails ---"

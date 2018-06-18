@@ -3,7 +3,6 @@ require 'json'
 
 module Unione
   class Client
-  private
     attr_reader :api_key, :username
 
     def initialize(api_key, username)
@@ -49,11 +48,23 @@ module Unione
 
 
     def send_emails(params)
-      params = translate_params(params).delete_if { |_, v| !v.present? }
-      params.merge!({ 'api_key' => api_key, 'username'=> username, 'format' => 'json' })
-      response = Net::HTTP.post_form(URI("https://one.unisender.com/ru/transactional/api/v1/email/send"), params)
+      params.merge!({ "api_key" => api_key, "username"=> username })
+
+      url = "https://one.unisender.com/ru/transactional/api/v1/email/send.json"
+      uri = URI.parse(url)
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = true
+      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+
+      request = Net::HTTP::Post.new(uri.path, initheader = {'Content-Type' =>'application/json'})
+      request.body = params.to_json
+
+      response = http.request(request)
+
+      raise NoMethodError.new("Unknown API method") if response.code == '404'
 
       { body: JSON.parse(response.body), code: response.code }
     end
+
   end
 end
