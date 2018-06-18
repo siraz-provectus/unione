@@ -43,6 +43,11 @@ module Unione
 
       result = @client.send_emails(send_params)
 
+      if result[:code] == "200" && @settings[:unione_email_model]
+        body = result[:body]
+        @settings[:unione_email_model].create(job_id: body["job_id"], title: mail.subject)
+      end
+
       @logger.info "--- UNIONE: response = #{result.inspect} ---"
       result
     end
