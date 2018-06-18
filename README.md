@@ -22,7 +22,36 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+update the settings for action_mailer
+
+```ruby
+  config.action_mailer.delivery_method = :smtp
+
+  config.action_mailer.smtp_settings = {
+    address: 'smtp.example.ru',
+    port: '25',
+    user_name: 'your_username',
+    password: 'your_password',
+    authentication: :plain,
+    openssl_verify_mode: 'none'
+  }
+```
+
+add api_key and username to secretes.yml
+
+```ruby
+  unione:
+    username: your_username
+    api_key: your_api_key
+```
+
+Add follow code to application_mailer
+
+```ruby
+  self.delivery_method = :unione
+  self.unione_settings = Rails.application.secrets.unione
+```
+
 
 ## Development
 
