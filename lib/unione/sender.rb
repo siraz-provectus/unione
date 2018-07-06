@@ -19,6 +19,7 @@ module Unione
 
     def deliver!(mail)
       recipients = []
+      inline_attachments = []
       mail_to    = [*mail.to]
 
       @logger.info "--- UNIONE: deliver! method ---"
@@ -30,13 +31,19 @@ module Unione
         recipients << {email: email_address}
       end
 
+      mail.attachments.inline.each do |attachment|
+        @logger.info "--- UNIONE:MAIL attachments #{attachment.inspect}"
+        inline_attachments << { type: attachment[:type].to_s, name: attachment[:name].to_s, content: Base64.encode64(File.read(attachment[:fileurl].to_s)) }
+      end
+
       send_params = {
         message: {
           subject: mail.subject,
           from_email: mail.from.first,
           from_name: @settings[:sender_name] || mail.from.split('@').first,
           recipients: recipients,
-          body: { html: mail.body.raw_source }
+          body: { html: mail.body.raw_source },
+          inline_attachments: inline_attachments
         }
       }
       @logger.info "--- UNIONE: send emails ---"
