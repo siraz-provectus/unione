@@ -31,9 +31,11 @@ module Unione
         recipients << {email: email_address}
       end
 
-      mail.attachments.inline.each do |attachment|
+      mail.attachments.each do |attachment|
         @logger.info "--- UNIONE:MAIL attachments #{attachment.inspect}"
-        inline_attachments << { type: attachment[:type].to_s, name: attachment[:name].to_s, content: Base64.encode64(File.read(attachment[:fileurl].to_s)) }
+        if attachment.filename.match('inline').present?
+          inline_attachments << { type: attachment[:type].to_s, name: attachment[:name].to_s, content: Base64.encode64(File.read(attachment[:fileurl].to_s)) }
+        end
       end
 
       send_params = {
@@ -42,10 +44,11 @@ module Unione
           from_email: mail.from.first,
           from_name: @settings[:sender_name] || mail.from.split('@').first,
           recipients: recipients,
-          body: { html: mail.body.raw_source },
+          body: { html: mail.html_part.body.raw_source },
           inline_attachments: inline_attachments
         }
       }
+
       @logger.info "--- UNIONE: send emails ---"
 
       result = @client.send_emails(send_params)
