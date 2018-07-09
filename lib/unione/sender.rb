@@ -31,6 +31,12 @@ module Unione
         recipients << {email: email_address}
       end
 
+      mail_body = if mail.attachments.present?
+        mail.html_part.body.raw_source
+      else
+        mail.body.raw_source
+      end
+
       mail.attachments.each do |attachment|
         @logger.info "--- UNIONE:MAIL attachments #{attachment.inspect}"
         if attachment.filename.match('inline').present?
@@ -44,7 +50,7 @@ module Unione
           from_email: mail.from.first,
           from_name: @settings[:sender_name] || mail.from.split('@').first,
           recipients: recipients,
-          body: { html: mail.html_part.body.raw_source },
+          body: { html: mail_body },
           inline_attachments: inline_attachments
         }
       }
