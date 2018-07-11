@@ -57,11 +57,40 @@ module Unione
 
       @logger.info "--- UNIONE: send emails ---"
 
+      @settings[:history_status_model].create(status: 'send', comment: "Отправка письма #{mail.subject}") if @settings[:history_status_model].present?
+
       result = @client.send_emails(send_params)
 
+      if @settings[:client_model] == Customer
+        customer = Customer.find_by(email: recipients.first[:email])
+
+        user_id = nil
+        customer_id = customer.present? ? customer.id : nil
+      elsif @settings[:client_model] == User
+        user = User.find_by(email_address: recipients.first[:email])
+        user ||= User.find_by(email: recipients.first[:email])
+
+        user_id = user.present? ? user.id : nil
+        customer_id = nil
+      end
+
+      body = result[:body]
+
       if result[:code] == "200" && @settings[:unione_email_model]
-        body = result[:body]
-        @settings[:unione_email_model].create(job_id: body["job_id"], title: mail.subject)
+        @settings[:unione_email_model].create(job_id: body["job_id"],
+                                              title: mail.subject,
+                                              customer_id: customer_id,
+                                              user_id: user_id,
+                                              status: body["status"],
+                                              email: body["emails"].first)
+      else
+        @settings[:unione_email_model].create(title: mail.subject,
+                                              customer_id: customer_id,
+                                              user_id: user_id,
+                                              status: body["status"],
+                                              email: body['failed_emails'].keys.first,
+                                              substatus: body['failed_emails'].values.first)
+
       end
 
       @logger.info "--- UNIONE: response = #{result.inspect} ---"
