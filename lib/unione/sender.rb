@@ -61,36 +61,40 @@ module Unione
 
       result = @client.send_emails(send_params)
 
-      if @settings[:client_model] == Customer
-        customer = Customer.find_by(email: recipients.first[:email])
+      if @settings[:client_model].present?
+        if @settings[:client_model] == Customer
+          customer = Customer.find_by(email: recipients.first[:email])
 
-        user_id = nil
-        customer_id = customer.present? ? customer.id : nil
-      elsif @settings[:client_model] == User
-        user = User.find_by(email_address: recipients.first[:email])
-        user ||= User.find_by(email: recipients.first[:email])
+          user_id = nil
+          customer_id = customer.present? ? customer.id : nil
+        elsif @settings[:client_model] == User
+          user = User.find_by(email_address: recipients.first[:email])
+          user ||= User.find_by(email: recipients.first[:email])
 
-        user_id = user.present? ? user.id : nil
-        customer_id = nil
+          user_id = user.present? ? user.id : nil
+          customer_id = nil
+        end
       end
 
       body = result[:body]
 
-      if result[:code] == "200" && @settings[:unione_email_model]
-        @settings[:unione_email_model].create(job_id: body["job_id"],
-                                              title: mail.subject,
-                                              customer_id: customer_id,
-                                              user_id: user_id,
-                                              status: body["status"],
-                                              email: body["emails"].first)
-      else
-        @settings[:unione_email_model].create(title: mail.subject,
-                                              customer_id: customer_id,
-                                              user_id: user_id,
-                                              status: body["status"],
-                                              email: body['failed_emails'].keys.first,
-                                              substatus: body['failed_emails'].values.first)
+      if @settings[:unione_email_model].present?
+        if result[:code] == "200"
+          @settings[:unione_email_model].create(job_id: body["job_id"],
+                                                title: mail.subject,
+                                                customer_id: customer_id,
+                                                user_id: user_id,
+                                                status: body["status"],
+                                                email: body["emails"].first)
+        else
+          @settings[:unione_email_model].create(title: mail.subject,
+                                                customer_id: customer_id,
+                                                user_id: user_id,
+                                                status: body["status"],
+                                                email: body['failed_emails'].keys.first,
+                                                substatus: body['failed_emails'].values.first)
 
+        end
       end
 
       @logger.info "--- UNIONE: response = #{result.inspect} ---"
