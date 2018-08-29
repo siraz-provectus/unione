@@ -61,9 +61,17 @@ module Unione
 
       response = http.request(request)
 
+      Rails.logger.info "--- UNIONE: client response = #{response.inspect} ---"
+
       raise NoMethodError.new("Unknown API method") if response.code == '404'
 
-      { body: JSON.parse(response.body), code: response.code }
+      begin
+        body = JSON.parse(response.body)
+      rescue => e
+        body = {'status' => e}
+      end
+
+      { body: body, code: response.code }
     end
 
   end
