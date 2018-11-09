@@ -73,6 +73,11 @@ module Unione
 
           user_id = user.present? ? user.id : nil
           customer_id = nil
+        elsif @settings[:client_model].present?
+          user = @settings[:client_model].find_by(email: recipients.first[:email])
+
+          user_id = user.present? ? user.id : nil
+          customer_id = nil
         end
       end
 
@@ -85,14 +90,16 @@ module Unione
                                                 customer_id: customer_id,
                                                 user_id: user_id,
                                                 status: body["status"],
-                                                email: body["emails"].first)
+                                                email: body["emails"].first,
+                                                site_id: @settings[:site_id])
         else
           @settings[:unione_email_model].create(title: mail.subject,
                                                 customer_id: customer_id,
                                                 user_id: user_id,
                                                 status: body["status"],
                                                 email: body['failed_emails'].present? ? body['failed_emails'].keys.first : recipients.first.email,
-                                                substatus: body['failed_emails'].present? ? body['failed_emails'].values.first : '')
+                                                substatus: body['failed_emails'].present? ? body['failed_emails'].values.first : '',
+                                                site_id: @settings[:site_id])
 
         end
       end
