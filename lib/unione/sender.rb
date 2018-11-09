@@ -62,14 +62,14 @@ module Unione
       result = @client.send_emails(send_params)
 
       if @settings[:client_model].present?
-        if @settings[:client_model] == Customer
-          customer = Customer.find_by(email: recipients.first[:email])
+        if @settings[:client_model] == ::Customer
+          customer = ::Customer.find_by(email: recipients.first[:email])
 
           user_id = nil
           customer_id = customer.present? ? customer.id : nil
-        elsif @settings[:client_model] == User
-          user = User.find_by(email_address: recipients.first[:email])
-          user ||= User.find_by(email: recipients.first[:email])
+        elsif @settings[:client_model] == ::User
+          user = ::User.find_by(email_address: recipients.first[:email])
+          user ||= ::User.find_by(email: recipients.first[:email])
 
           user_id = user.present? ? user.id : nil
           customer_id = nil
