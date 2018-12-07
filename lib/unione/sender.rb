@@ -97,7 +97,7 @@ module Unione
                                                 customer_id: customer_id,
                                                 user_id: user_id,
                                                 status: body["status"],
-                                                email: body['failed_emails'].present? ? body['failed_emails'].keys.first : recipients.first.email,
+                                                email: body['failed_emails'].present? ? body['failed_emails'].keys.first : recipients.first[:email],
                                                 substatus: body['failed_emails'].present? ? body['failed_emails'].values.first : '',
                                                 site_id: @settings[:site_id])
 
