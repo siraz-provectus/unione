@@ -48,7 +48,7 @@ module Unione
         message: {
           subject: mail.subject,
           from_email: mail.from.first,
-          from_name: @settings[:sender_name] || mail.from.split('@').first,
+          from_name: sender_name(mail.From.unparsed_value),
           recipients: recipients,
           body: { html: mail_body },
           inline_attachments: inline_attachments
@@ -106,6 +106,17 @@ module Unione
 
       @logger.info "--- UNIONE: response = #{result.inspect} ---"
       result
+    end
+
+    def sender_name(mail_from)
+      # ActionMailer::Base default sender form `Bill Gates <bill@microsoft.com>`
+      
+      default_mail_form_regexp = / <[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z0-9]+>/ 
+      if mail_from.match default_mail_form_regexp
+        mail_from.sub default_mail_form_regexp, ''
+      else
+        @settings[:sender_name] || mail_from.split('@').first
+      end
     end
   end
 end
