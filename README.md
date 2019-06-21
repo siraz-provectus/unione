@@ -52,6 +52,13 @@ Add follow code to application_mailer
   self.unione_settings = Rails.application.secrets.unione
 ```
 
+Use ActionMailer sender name format:
+
+```ruby
+mail to: 'bill@microsoft.com', subject: 'I like you!', from: 'Tim Cook <tim@apple.com>'
+```
+
+in this case Unisender will send email as Tim Cook in the name field.
 
 ## Development
 
