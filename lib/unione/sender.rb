@@ -111,7 +111,7 @@ module Unione
     def sender_name(mail_from)
       # ActionMailer::Base default sender form `Bill Gates <bill@microsoft.com>`
       
-      default_mail_form_regexp = / <[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z0-9]+>/ 
+      default_mail_form_regexp = / <[a-zA-Z0-9]+@[a-zA-Z0-9]+\.+.+>/
       if mail_from.match default_mail_form_regexp
         mail_from.sub default_mail_form_regexp, ''
       else
